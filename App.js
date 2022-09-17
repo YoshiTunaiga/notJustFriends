@@ -1,15 +1,16 @@
 import React from "react";
 import { StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import Navigator from "./src/navigation";
 import CreatePostScreen from "./src/screens/CreatePostScreen";
 // import FeedScreen from "./src/screens/FeedScreen";
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <View style={styles.container}>
-        <StatusBar style="auto" />
-        <CreatePostScreen />
+    <SafeAreaProvider style={styles.container}>
+      <View>
+        <StatusBar />
+        <Navigator />
       </View>
     </SafeAreaProvider>
   );

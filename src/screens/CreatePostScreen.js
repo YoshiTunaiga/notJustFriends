@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Entypo } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { useNavigation } from "@react-navigation/native";
 
 const user = {
   id: "u1",
@@ -23,10 +24,11 @@ const CreatePostScreen = () => {
   const insets = useSafeAreaInsets();
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
-
+  const navigation = useNavigation();
   const onPost = () => {
     console.warn("Posting: ", description);
     setDescription("");
+    navigation.goBack();
   };
 
   const pickImage = async () => {
@@ -47,7 +49,7 @@ const CreatePostScreen = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      // style={[styles.container, { marginBottom: insets.bottom }]}
+      style={[styles.container, { marginBottom: insets.bottom }]}
       contentContainerStyle={{ flex: 1 }}
       keyboardVerticalOffset={150}
     >

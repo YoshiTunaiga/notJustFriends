@@ -1,4 +1,3 @@
-import { StatusBar } from "expo-status-bar";
 import { View, Text, Image, Pressable } from "react-native";
 import {
   Entypo,
@@ -9,16 +8,21 @@ import {
 import LikeImage from "../../../assets/images/like.png";
 import { styles } from "./styles";
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 
 export default function FeedPost({ post }) {
   const [isLiked, setIsLiked] = useState(false);
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
       {/* Post component */}
       <View style={styles.post}>
         {/* Post Header with details about the author */}
-        <View style={styles.header}>
+        <Pressable
+          onPress={() => navigation.navigate("Profile", { id: post.User.id })}
+          style={styles.header}
+        >
           <Image
             source={{ uri: post.User.image }}
             style={styles.profileImage}
@@ -33,7 +37,7 @@ export default function FeedPost({ post }) {
             color="gray"
             style={styles.icon}
           />
-        </View>
+        </Pressable>
 
         {/* Post body with description and image */}
         <Text style={styles.description}>{post.description}</Text>
@@ -95,8 +99,6 @@ export default function FeedPost({ post }) {
           </View>
         </View>
       </View>
-
-      <StatusBar style="auto" />
     </View>
   );
 }
