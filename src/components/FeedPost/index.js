@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, Pressable } from "react-native";
 import {
   Entypo,
   AntDesign,
@@ -8,8 +8,11 @@ import {
 } from "@expo/vector-icons";
 import LikeImage from "../../../assets/images/like.png";
 import { styles } from "./styles";
+import { useState } from "react";
 
 export default function FeedPost({ post }) {
+  const [isLiked, setIsLiked] = useState(false);
+
   return (
     <View style={styles.container}>
       {/* Post component */}
@@ -55,10 +58,24 @@ export default function FeedPost({ post }) {
           {/* Buttons row */}
           <View style={styles.buttonsRow}>
             {/* Like button */}
-            <View style={styles.iconButton}>
-              <AntDesign name="like2" size={18} color="gray" />
-              <Text style={styles.iconButtonText}>Like</Text>
-            </View>
+            <Pressable
+              onPress={() => setIsLiked(!isLiked)}
+              style={styles.iconButton}
+            >
+              <AntDesign
+                name="like2"
+                size={18}
+                color={isLiked ? "royalblue" : "gray"}
+              />
+              <Text
+                style={[
+                  styles.iconButtonText,
+                  { color: isLiked ? "royalblue" : "gray" },
+                ]}
+              >
+                Like
+              </Text>
+            </Pressable>
 
             {/* Comment button */}
             <View style={styles.iconButton}>
