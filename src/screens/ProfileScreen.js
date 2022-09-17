@@ -26,6 +26,7 @@ const bg = "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/1.jpg";
 const profilePictureWidth = Dimensions.get("window").width * 0.4;
 
 const ProfileScreenHeader = ({ user, isMe = false }) => {
+  // console.log(user);
   const navigation = useNavigation();
 
   const signOut = async () => {
@@ -54,7 +55,10 @@ const ProfileScreenHeader = ({ user, isMe = false }) => {
                 Add to Story
               </Text>
             </Pressable>
-            <Pressable style={styles.button}>
+            <Pressable
+              onPress={() => navigation.navigate("Update Profile")}
+              style={styles.button}
+            >
               <MaterialCommunityIcons name="pencil" size={16} color="black" />
               <Text style={styles.buttonText}>Edit Profile</Text>
             </Pressable>

@@ -6,13 +6,14 @@ import ProfileScreen from "../screens/ProfileScreen";
 import { FontAwesome } from "@expo/vector-icons";
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import UpdateProfileScreen from "../screens/UpdateProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
 const Navigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Feed">
+      <Stack.Navigator initialRouteName="Create Post">
         <Stack.Screen
           name="Feed"
           component={FeedScreen}
@@ -29,6 +30,7 @@ const Navigator = () => {
         />
         <Stack.Screen name="Create Post" component={CreatePostScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen name="Update Profile" component={UpdateProfileScreen} />
       </Stack.Navigator>
       <FeedScreen />
     </NavigationContainer>
