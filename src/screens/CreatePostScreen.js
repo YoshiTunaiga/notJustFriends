@@ -9,6 +9,8 @@ import {
   Button,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Entypo } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 const user = {
   id: "u1",
@@ -20,10 +22,26 @@ const user = {
 const CreatePostScreen = () => {
   const insets = useSafeAreaInsets();
   const [description, setDescription] = useState("");
+  const [image, setImage] = useState(null);
 
   const onPost = () => {
     console.warn("Posting: ", description);
     setDescription("");
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.cancelled) {
+      setImage(result.uri);
+    }
   };
 
   return (
@@ -36,6 +54,13 @@ const CreatePostScreen = () => {
       <View style={styles.header}>
         <Image source={{ uri: user.image }} style={styles.profileImage} />
         <Text style={styles.name}>{user.name}</Text>
+        <Entypo
+          onPress={pickImage}
+          name="images"
+          size={24}
+          color="limegreen"
+          style={styles.icon}
+        />
       </View>
       <TextInput
         placeholder="What's on your mind?"
@@ -43,8 +68,10 @@ const CreatePostScreen = () => {
         value={description}
         // When user types, TextInput will call the onChangeText callback with the new value
         onChangeText={setDescription}
+        style={styles.input}
         multiline
       />
+      <Image source={{ uri: image }} style={styles.image} />
       <View style={styles.buttonContainer}>
         <Button onPress={onPost} title="Post" disabled={!description} />
       </View>
@@ -82,6 +109,10 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: "auto",
     marginVertical: 10,
+  },
+  image: {
+    width: "100%",
+    aspectRatio: 4 / 3,
   },
 });
 
