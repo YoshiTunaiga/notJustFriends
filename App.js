@@ -7,11 +7,8 @@ import CreatePostScreen from "./src/screens/CreatePostScreen";
 
 export default function App() {
   return (
-    <SafeAreaProvider style={styles.container}>
-      <View>
-        <StatusBar />
-        <Navigator />
-      </View>
+    <SafeAreaProvider>
+      <Navigator />
     </SafeAreaProvider>
   );
 }

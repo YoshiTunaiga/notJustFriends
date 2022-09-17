@@ -13,7 +13,7 @@ const Stack = createNativeStackNavigator();
 const Navigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Create Post">
+      <Stack.Navigator initialRouteName="Feed">
         <Stack.Screen
           name="Feed"
           component={FeedScreen}
@@ -32,7 +32,6 @@ const Navigator = () => {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Update Profile" component={UpdateProfileScreen} />
       </Stack.Navigator>
-      <FeedScreen />
     </NavigationContainer>
   );
 };
