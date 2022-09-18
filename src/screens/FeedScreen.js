@@ -8,41 +8,49 @@ import {
 } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import FeedPost from "../components/FeedPost/index";
-import posts from "../../assets/data/posts.json";
+// import posts from "../../assets/data/posts.json";
 import { useNavigation } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import { DataStore, SortDirection, Predicates } from "aws-amplify";
+import { Post } from "../models";
+
 const img =
   "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/user.png";
 
 const FeedScreen = () => {
   const navigation = useNavigation();
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const subscription = DataStore.observeQuery(Post, Predicates.ALL, {
+      sort: (s) => s.createdAt(SortDirection.DESCENDING),
+    }).subscribe(({ items }) => setPosts(items));
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const createPost = () => {
     navigation.navigate("Create Post");
   };
 
   return (
-    // <ScrollView showsVerticalScrollIndicator={false}>
     <FlatList
       data={posts}
-      renderItem={({ item }) => (
-        <FeedPost
-          post={item}
-          ListHeaderComponent={() => (
-            <Pressable onPress={createPost} style={styles.header}>
-              <Image source={{ uri: img }} style={styles.profileImage} />
-              <Text style={styles.name}>What's on your mind?</Text>
-              <Entypo
-                name="images"
-                size={24}
-                color="limegreen"
-                style={styles.icon}
-              />
-            </Pressable>
-          )}
-        />
+      renderItem={({ item }) => <FeedPost post={item} />}
+      ListHeaderComponent={() => (
+        <Pressable onPress={createPost} style={styles.header}>
+          <Image source={{ uri: img }} style={styles.profileImage} />
+          <Text style={styles.name}>What's on your mind?</Text>
+          <Entypo
+            name="images"
+            size={24}
+            color="limegreen"
+            style={styles.icon}
+          />
+        </Pressable>
       )}
+      showsVerticalScrollIndicator={false}
     />
-    // </ScrollView>
   );
 };
 

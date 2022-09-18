@@ -1,3 +1,9 @@
+import { useEffect, useState } from "react";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import FeedPost from "../components/FeedPost";
+import { Auth, DataStore } from "aws-amplify";
+import { User, Post } from "../models";
+import { S3Image } from "aws-amplify-react-native/dist/Storage";
 import {
   View,
   Text,
@@ -7,9 +13,8 @@ import {
   Dimensions,
   FlatList,
   Pressable,
+  Alert,
 } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import FeedPost from "../components/FeedPost";
 import {
   AntDesign,
   MaterialCommunityIcons,
@@ -17,7 +22,6 @@ import {
   Ionicons,
   Entypo,
 } from "@expo/vector-icons";
-import user from "../../assets/data/user.json";
 
 const dummy_img =
   "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/user.png";
@@ -26,11 +30,12 @@ const bg = "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/images/1.jpg";
 const profilePictureWidth = Dimensions.get("window").width * 0.4;
 
 const ProfileScreenHeader = ({ user, isMe = false }) => {
-  // console.log(user);
   const navigation = useNavigation();
 
   const signOut = async () => {
     console.warn("Sign out");
+    await Auth.signOut();
+    await DataStore.clear();
   };
 
   if (!user) {
@@ -40,9 +45,13 @@ const ProfileScreenHeader = ({ user, isMe = false }) => {
   return (
     <View style={styles.container}>
       <Image source={{ uri: bg }} style={styles.bg} />
-      <Image source={{ uri: user?.image || dummy_img }} style={styles.image} />
+      {user?.image ? (
+        <S3Image imgKey={user?.image} style={styles.image} />
+      ) : (
+        <Image source={{ uri: dummy_img }} style={styles.image} />
+      )}
 
-      <Text style={styles.name}>{user.name}</Text>
+      <Text style={styles.name}>{user?.name}</Text>
 
       {isMe && (
         <>
@@ -101,13 +110,59 @@ const ProfileScreenHeader = ({ user, isMe = false }) => {
 };
 
 const ProfileScreen = () => {
+  const [user, setUser] = useState(null);
+  const [isMe, setIsMe] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const navigation = useNavigation();
   const route = useRoute();
 
-  console.warn("User: ", route?.params?.id);
+  // console.warn("User: ", route?.params?.id);
+  // console.warn("User: ", user.name);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      // get the authenticated user
+      const userData = await Auth.currentAuthenticatedUser();
+      // take the user id from the route or from the authenticated user
+      const userId = route?.params?.id || userData?.attributes?.sub;
+      if (!userId) {
+        return;
+      }
+
+      // keep track if we are querying the data about the authenticated user
+      const isMe = userId === userData?.attributes?.sub;
+      setIsMe(isMe);
+
+      // query the database user
+      const dbUser = await DataStore.query(User, userId);
+
+      if (!dbUser) {
+        // if we couldn't find the user in the database
+        if (isMe) {
+          // and it is my profile, then redirect to Update Profile page
+          navigation.navigate("Update Profile");
+        } else {
+          // otherwise, Alert the user
+          Alert.alert("User not found!");
+        }
+        return;
+      }
+      // save the user in the state
+      setUser(dbUser);
+
+      // query his posts
+      const dbPosts = await DataStore.query(Post, (p) =>
+        p.postUserId("eq", userId)
+      );
+      setPosts(dbPosts);
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <FlatList
-      data={user.posts}
+      data={posts}
       renderItem={({ item }) => <FeedPost post={item} />}
       showsVerticalScrollIndicator={false}
       ListHeaderComponent={() => (

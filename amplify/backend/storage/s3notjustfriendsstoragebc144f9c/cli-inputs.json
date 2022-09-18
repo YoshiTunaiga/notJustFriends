@@ -1,0 +1,14 @@
+{
+  "resourceName": "s3notjustfriendsstoragebc144f9c",
+  "bucketName": "notjustfriends-storage-bc144f9c",
+  "policyUUID": "8e9c0334",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ]
+}

@@ -7,12 +7,26 @@ import {
 } from "@expo/vector-icons";
 import LikeImage from "../../../assets/images/like.png";
 import { styles } from "./styles";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { DataStore } from "aws-amplify";
+import { User } from "../../models";
+import { S3Image } from "aws-amplify-react-native";
+
+const dummy_img =
+  "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/user.png";
 
 export default function FeedPost({ post }) {
   const [isLiked, setIsLiked] = useState(false);
+  const [user, setUser] = useState(null);
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!post.postUserId) {
+      return;
+    }
+    DataStore.query(User, post.postUserId).then(setUser);
+  }, [post.postUserId]);
 
   return (
     <View style={styles.container}>
@@ -20,15 +34,20 @@ export default function FeedPost({ post }) {
       <View style={styles.post}>
         {/* Post Header with details about the author */}
         <Pressable
-          onPress={() => navigation.navigate("Profile", { id: post.User.id })}
+          onPress={() => navigation.navigate("Profile", { id: post.User?.id })}
           style={styles.header}
         >
-          <Image
+          {user?.image ? (
+            <S3Image imgKey={user.image} style={styles.profileImage} />
+          ) : (
+            <Image source={{ uri: dummy_img }} style={styles.profileImage} />
+          )}
+          {/* <Image
             source={{ uri: post.User.image }}
             style={styles.profileImage}
-          />
+          /> */}
           <View>
-            <Text style={styles.name}>{post.User.name}</Text>
+            <Text style={styles.name}>{user?.name}</Text>
             <Text style={styles.subtitle}>{post.createdAt}</Text>
           </View>
           <Entypo
@@ -38,7 +57,6 @@ export default function FeedPost({ post }) {
             style={styles.icon}
           />
         </Pressable>
-
         {/* Post body with description and image */}
         <Text style={styles.description}>{post.description}</Text>
         {post.image && (
@@ -48,10 +66,8 @@ export default function FeedPost({ post }) {
             resizeMode="cover"
           />
         )}
-
         {/* Post footer with likes and button */}
         <View style={styles.footer}>
-          {/* Stats row */}
           <View style={styles.statsRow}>
             <Image source={LikeImage} style={styles.likeIcon} />
             <Text style={styles.likedBy}>
@@ -59,7 +75,6 @@ export default function FeedPost({ post }) {
             </Text>
             <Text style={styles.shares}>{post.numberOfShares} shares</Text>
           </View>
-          {/* Buttons row */}
           <View style={styles.buttonsRow}>
             {/* Like button */}
             <Pressable

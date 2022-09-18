@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,22 +12,47 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Entypo } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "@react-navigation/native";
-
-const user = {
-  id: "u1",
-  image:
-    "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/vadim.jpg",
-  name: "Vadim Savin",
-};
+import { DataStore, Auth, Storage } from "aws-amplify";
+import { Post, User } from "../models";
+import { v4 as uuidv4 } from "uuid";
 
 const CreatePostScreen = () => {
   const insets = useSafeAreaInsets();
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null);
+  const [user, setUser] = useState();
+
   const navigation = useNavigation();
-  const onPost = () => {
-    console.warn("Posting: ", description);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await Auth.currentAuthenticatedUser();
+      const dbUser = await DataStore.query(User, userData.attributes.sub);
+      if (dbUser) {
+        setUser(dbUser);
+        console.log(dbUser);
+      } else {
+        navigation.navigate("Update profile");
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const onPost = async () => {
+    const newPost = {
+      description: description,
+      numberOfLikes: 0,
+      numberOfShares: 0,
+      postUserId: user.id,
+      _version: 1,
+    };
+    if (image) {
+      newPost.image = await uploadFile(image);
+    }
+    await DataStore.save(new Post(newPost));
     setDescription("");
+    setImage("");
     navigation.goBack();
   };
 
@@ -46,6 +71,20 @@ const CreatePostScreen = () => {
     }
   };
 
+  const uploadFile = async (fileUri) => {
+    try {
+      const response = await fetch(fileUri);
+      const blob = await response.blob();
+      const key = `${uuidv4()}.png`;
+      await Storage.put(key, blob, {
+        contentType: "image/png", // contentType is optional
+      });
+      return key;
+    } catch (err) {
+      console.log("Error uploading file:", err);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -54,8 +93,8 @@ const CreatePostScreen = () => {
       keyboardVerticalOffset={150}
     >
       <View style={styles.header}>
-        <Image source={{ uri: user.image }} style={styles.profileImage} />
-        <Text style={styles.name}>{user.name}</Text>
+        <Image source={{ uri: user?.image }} style={styles.profileImage} />
+        <Text style={styles.name}>{user?.name}</Text>
         <Entypo
           onPress={pickImage}
           name="images"
@@ -104,9 +143,7 @@ const styles = StyleSheet.create({
   name: {
     fontWeight: "500",
   },
-  input: {
-    marginBottom: "auto",
-  },
+  input: {},
   // Button
   buttonContainer: {
     marginTop: "auto",
